@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gerenciamento de TCCs</title>
+    <link rel="stylesheet"  href="style.css"></link>
+    <script src="script.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Tela de Login -->
+        <div id="loginScreen" class="screen active login-screen">
+            <div class="login-box">
+                <h2>Sistema de TCCs</h2>
+                <p>Faça login para continuar</p>
+                <div id="loginAlert"></div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" required placeholder="seu.email@exemplo.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Senha</label>
+                        <input type="password" id="loginSenha" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+                        Entrar
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tela do Aluno -->
+        <div id="alunoScreen" class="screen">
+            <div class="header">
+                <h1>Área do Aluno</h1>
+                <div class="user-info">
+                    <span id="alunoNome"></span>
+                    <button class="btn btn-logout" onclick="logout()">Sair</button>
+                </div>
+            </div>
+            <div style="padding: 32px;">
+                <div id="alunoAlert"></div>
+                <div id="alunoContent"></div>
+            </div>
+        </div>
+
+        <!-- Tela do Professor -->
+        <div id="professorScreen" class="screen">
+            <div class="header">
+                <h1>Área do Professor</h1>
+                <div class="user-info">
+                    <span id="professorNome"></span>
+                    <button class="btn btn-logout" onclick="logout()">Sair</button>
+                </div>
+            </div>
+            <div style="padding: 32px;">
+                <div class="tabs">
+                    <button class="tab active" onclick="showProfessorTab('orientacoes')">Minhas Orientações</button>
+                    <button class="tab" onclick="showProfessorTab('avaliacoes')">Avaliações</button>
+                </div>
+                <div id="professorAlert"></div>
+                <div id="professorContent"></div>
+            </div>
+        </div>
+
+        <!-- Tela do Administrador -->
+        <div id="adminScreen" class="screen">
+            <div class="header">
+                <h1>Área do Administrador</h1>
+                <div class="user-info">
+                    <span id="adminNome"></span>
+                    <button class="btn btn-logout" onclick="logout()">Sair</button>
+                </div>
+            </div>
+            <div style="padding: 32px;">
+                <div class="tabs">
+                    <button class="tab active" onclick="showAdminTab('dashboard')">Dashboard</button>
+                    <button class="tab" onclick="showAdminTab('projetos')">Projetos</button>
+                    <button class="tab" onclick="showAdminTab('alunos')">Alunos</button>
+                    <button class="tab" onclick="showAdminTab('professores')">Professores</button>
+                </div>
+                <div id="adminAlert"></div>
+                <div id="adminContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Criar Projeto -->
+    <div id="modalCriarProjeto" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Criar Novo Projeto</h2>
+                <button class="btn-close" onclick="closeModal('modalCriarProjeto')">&times;</button>
+            </div>
+            <form id="formCriarProjeto">
+                <div class="form-group">
+                    <label>Título do Projeto *</label>
+                    <input type="text" id="projetoTitulo" required>
+                </div>
+                <div class="form-group">
+                    <label>Descrição *</label>
+                    <textarea id="projetoDescricao" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Área de Concentração *</label>
+                    <input type="text" id="projetoArea" required>
+                </div>
+                <div class="form-group">
+                    <label>Professor Orientador (Registro)</label>
+                    <input type="number" id="projetoOrientador">
+                </div>
+                <div class="form-group">
+                    <label>Colaboradores (Matrículas separadas por vírgula)</label>
+                    <input type="text" id="projetoColaboradores" placeholder="Ex: 12345, 67890">
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalCriarProjeto')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">Criar Projeto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Colaborador -->
+    <div id="modalAddColaborador" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Adicionar Colaborador</h2>
+                <button class="btn-close" onclick="closeModal('modalAddColaborador')">&times;</button>
+            </div>
+            <form id="formAddColaborador">
+                <div class="form-group">
+                    <label>Matrícula do Aluno</label>
+                    <input type="number" id="colaboradorMatricula" required>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalAddColaborador')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Avaliar Projeto -->
+    <div id="modalAvaliar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Avaliar Projeto</h2>
+                <button class="btn-close" onclick="closeModal('modalAvaliar')">&times;</button>
+            </div>
+            <form id="formAvaliar">
+                <div class="form-group">
+                    <label>Nota (0-10)</label>
+                    <input type="number" id="projetoNota" min="0" max="10" step="0.1" required>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalAvaliar')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">Avaliar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

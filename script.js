@@ -91,8 +91,9 @@ async function loadAlunoData() {
 
     try {
         const response = await fetch(`${API_URL}/alunos/${currentUser.usuario.matricula}`);
-
-        if (response.status === 400) {
+        const responseData = await response.json()
+        // console.log(responseData);
+        if (response.status === 400 || response.status === 200 && !responseData.projeto) {
             // Aluno não tem projeto
             document.getElementById('alunoContent').innerHTML = `
                 <div class="empty-state">
@@ -105,12 +106,11 @@ async function loadAlunoData() {
                 </div>
             `;
         } else {
-            const endpointResponse = await response.json();
-            const projectResponse = await fetch(`${API_URL}/projetos/${endpointResponse.projeto.id}`);
+            const projectResponse = await fetch(`${API_URL}/projetos/${responseData.projeto.id}`);
             const project = await projectResponse.json();
 
             displayAlunoProjeto(project);
-            console.log(project);
+            // console.log(project);
         }
     } catch (error) {
         console.log(error)
@@ -219,6 +219,7 @@ document.getElementById('formCriarProjeto').addEventListener('submit', async (e)
             document.getElementById('formCriarProjeto').reset();
         } else {
             const error = await response.json();
+            console.log(error)
             showAlert('alunoAlert', error.erro || 'Erro ao criar projeto', 'error');
         }
     } catch (error) {
@@ -270,9 +271,9 @@ async function showProfessorTab(tab) {
 
 async function loadProfessorOrientacoes() {
     try {
-        const response = await fetch(`${API_URL}/professores/${currentUser.usuario.registro}`);
+        const response = await fetch(`${API_URL}/professores/${currentUser.usuario.registro}`); //colocar para aparecer os projetos no get de professor
         const projetos = await response.json();
-        
+        console.log(projetos)
         if (!projetos || projetos.length === 0) {
             document.getElementById('professorContent').innerHTML = `
                 <div class="empty-state">
@@ -302,6 +303,7 @@ async function loadProfessorOrientacoes() {
 
         document.getElementById('professorContent').innerHTML = html;
     } catch (error) {
+        console.log(error);
         showAlert('professorAlert', 'Erro ao carregar orientações', 'error');
     }
 }
@@ -335,8 +337,7 @@ async function loadProfessorAvaliacoes() {
                             ${p.nota ? `<span class="card-badge badge-approved">Avaliado: ${p.nota.toFixed(1)}</span>` : ''}
                         </div>
                         <div class="card-content">
-                            <p><strong>Orientador:</strong> ${p.orientador?.nome || 'N/A'}</p>
-                            <p><strong>Área:</strong> ${p.areaDeConcentracao}</p>
+                            <p><strong>Orientador:</strong> ${p?.professores?.Orientadores?.nome || 'N/A'}</p>
                         </div>
                         <div class="card-footer">
                             ${!p.nota ? `
@@ -361,6 +362,7 @@ function avaliarProjeto(projetoId) {
     openModal('modalAvaliar');
 }
 
+document.addEventListener('DOMContentLoaded', () => {
 document.getElementById('formAvaliar').addEventListener('submit', async (e) => {
     e.preventDefault();
     const nota = parseFloat(document.getElementById('projetoNota').value);
@@ -382,6 +384,7 @@ document.getElementById('formAvaliar').addEventListener('submit', async (e) => {
     } catch (error) {
         showAlert('professorAlert', 'Erro ao avaliar projeto', 'error');
     }
+});
 });
 
 // Funções do Administrador

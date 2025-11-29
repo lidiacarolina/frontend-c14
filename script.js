@@ -41,18 +41,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-
-    function logout() {
-        currentUser = null;
-        document.getElementById('loginEmail').value = '';
-        document.getElementById('loginSenha').value = '';
-        showScreen('login');
-    }
+function showAlert(containerId, message, type) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+    setTimeout(() => container.innerHTML = '', 5000);
+}
 
 function showScreen(screen) {
     // Oculta todas as telas
     document.querySelectorAll('.screen').forEach(s => {
         s.style.display = 'none';
+    });
+
+    // Logout
+    document.querySelectorAll('.btn-logout').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentUser = null;
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginSenha').value = '';
+            showScreen('login');
+        });
     });
     
     // Mostra apenas a tela desejada
@@ -67,14 +75,6 @@ function showScreen(screen) {
     }
 }
 });
-
-
-function showAlert(containerId, message, type) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-    setTimeout(() => container.innerHTML = '', 5000);
-}
-
 // Funções do Aluno
 async function loadUserData() {
     if (currentUser.tipoUsuario === 'aluno') {
@@ -113,7 +113,7 @@ async function loadAlunoData() {
             // console.log(project);
         }
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         showAlert('alunoAlert', 'Erro ao carregar dados', 'error');
     }
 }
@@ -127,6 +127,7 @@ function displayAlunoProjeto(projeto) {
         (projeto.nota >= 6 ? 'badge-approved' : 'badge-rejected') : 
         'badge-pending';
 
+    if (!projeto.nota) {
     document.getElementById('alunoContent').innerHTML = `
         <div class="card">
             <div class="card-header">
@@ -162,6 +163,38 @@ function displayAlunoProjeto(projeto) {
             </div>
         </div>
     `;
+    } else {
+    document.getElementById('alunoContent').innerHTML = `
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">${projeto.titulo}</h2>
+                <span class="card-badge ${badgeClass}">${status}</span>
+            </div>
+            <div class="card-content">
+                <div class="info-row">
+                    <span class="info-label">Descrição:</span>
+                    <span class="info-value">${projeto.descricao}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Orientador:</span>
+                    <span class="info-value">${projeto.professores?.Orientadores?.nome || 'Aguardando'}</span>
+                </div>
+                ${projeto.nota ? `
+                <div class="info-row">
+                    <span class="info-label">Nota:</span>
+                    <span class="info-value"><strong>${projeto.nota.toFixed(1)}</strong></span>
+                </div>
+                ` : ''}
+                <div class="info-row">
+                    <span class="info-label">Colaboradores:</span>
+                    <div>
+                        ${projeto.alunos?.map(a => `<span class="chip">${a.nome}</span>`).join('') || 'Nenhum'}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    }
 }
 
 function addColaboradorToProjeto(projetoId) {
@@ -183,7 +216,8 @@ document.addEventListener('DOMContentLoaded', function() {
 document.getElementById('formCriarProjeto').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const matriculas = [currentUser.id];
+    const matriculas = [currentUser.usuario.matricula];
+    console.log(matriculas)
     const colaboradores = document.getElementById('projetoColaboradores').value;
     if (colaboradores) {
         colaboradores.split(',').forEach(m => {
@@ -206,6 +240,7 @@ document.getElementById('formCriarProjeto').addEventListener('submit', async (e)
     }
 
     try {
+        console.log("teste")
         const response = await fetch(`${API_URL}/projetos`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -219,7 +254,7 @@ document.getElementById('formCriarProjeto').addEventListener('submit', async (e)
             document.getElementById('formCriarProjeto').reset();
         } else {
             const error = await response.json();
-            console.log(error)
+            // console.log(error)
             showAlert('alunoAlert', error.erro || 'Erro ao criar projeto', 'error');
         }
     } catch (error) {
@@ -271,23 +306,29 @@ async function showProfessorTab(tab) {
 
 async function loadProfessorOrientacoes() {
     try {
-        const response = await fetch(`${API_URL}/professores/${currentUser.usuario.registro}`); //colocar para aparecer os projetos no get de professor
+        const response = await fetch(`${API_URL}/projetos`);
         const projetos = await response.json();
-        console.log(projetos)
-        if (!projetos || projetos.length === 0) {
+
+        // console.log(projetos);
+        // Filtrar projetos onde o professor não é orientador
+        const projetosOrientados = projetos.filter(p => 
+            (p?.professores?.Orientadores?.registro === currentUser?.usuario?.registro)
+        );
+
+        if (projetosOrientados.length === 0) {
             document.getElementById('professorContent').innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">📋</div>
-                    <h3>Nenhuma orientação no momento</h3>
-                    <p>Você ainda não está orientando nenhum projeto</p>
-                </div>
-            `;
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>Nenhuma orientação no momento</h3>
+                        <p>Você ainda não orientou nenhum projeto</p>
+                    </div>
+                `;
             return;
         }
 
         const html = `
             <div class="content-grid">
-                ${projetos.map(p => `
+                ${projetosOrientados.map(p => `
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">${p.titulo}</h3>
@@ -303,7 +344,6 @@ async function loadProfessorOrientacoes() {
 
         document.getElementById('professorContent').innerHTML = html;
     } catch (error) {
-        console.log(error);
         showAlert('professorAlert', 'Erro ao carregar orientações', 'error');
     }
 }
@@ -313,11 +353,11 @@ async function loadProfessorAvaliacoes() {
         const response = await fetch(`${API_URL}/projetos`);
         const projetos = await response.json();
 
-        // Filtrar projetos onde o professor não é orientador
         const projetosParaAvaliar = projetos.filter(p => 
-            !p.orientador || p.orientador.registro !== currentUser.id
+            (p?.professores?.Orientadores?.registro === currentUser?.usuario?.registro) && !p?.nota
         );
 
+        console.log(projetosParaAvaliar);
         if (projetosParaAvaliar.length === 0) {
             document.getElementById('professorContent').innerHTML = `
                 <div class="empty-state">

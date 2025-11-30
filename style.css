@@ -22,6 +22,8 @@ body {
     max-width: 1200px;
     min-height: 600px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .header {
@@ -31,6 +33,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
+    border-radius: 16px 16px 0 0;
 }
 
 .header h1 {
@@ -103,19 +107,162 @@ body {
 
 .screen {
     display: none;
-    padding: 32px;
+    flex-direction: column;
+    height: 100%;
 }
 
 .screen.active {
-    display: block;
+    display: flex;
 }
 
+/* Screens com header grudado no topo */
+#alunoScreen,
+#professorScreen,
+#adminScreen {
+    padding: 0;
+}
+
+#alunoScreen > div:not(.header),
+#professorScreen > div:not(.header),
+#adminScreen > div:not(.header) {
+    padding: 32px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* ===== NOVO ESTILO DE LOGIN ===== */
 .login-screen {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 600px;
+    padding: 0;
 }
+
+.login-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+}
+
+.login-left {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: white;
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    min-width: 320px;
+}
+
+.login-left h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.login-left p {
+    font-size: 16px;
+    opacity: 0.9;
+    margin-bottom: 40px;
+    line-height: 1.6;
+}
+
+.welcome-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+.login-right {
+    flex: 1;
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 380px;
+    background: white;
+}
+
+.login-right h2 {
+    color: #1e40af;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.login-subtitle {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 40px;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 18px;
+}
+
+.login-screen .form-group input {
+    width: 100%;
+    padding: 14px 16px 14px 45px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s;
+    background: #f9fafb;
+}
+
+.login-screen .form-group input:focus {
+    outline: none;
+    border-color: #2563eb;
+    background: white;
+}
+
+.login-screen .btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 10px;
+}
+
+.login-screen .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+}
+
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+    }
+
+    .login-left {
+        min-height: 200px;
+    }
+
+    .login-right {
+        padding: 40px 30px;
+    }
+}
+/* ===== FIM NOVO ESTILO DE LOGIN ===== */
 
 .login-box {
     margin-top: 10vh;

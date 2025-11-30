@@ -309,20 +309,18 @@ async function loadProfessorOrientacoes() {
         const response = await fetch(`${API_URL}/projetos`);
         const projetos = await response.json();
 
-        // console.log(projetos);
-        // Filtrar projetos onde o professor não é orientador
         const projetosOrientados = projetos.filter(p => 
             (p?.professores?.Orientadores?.registro === currentUser?.usuario?.registro)
         );
 
         if (projetosOrientados.length === 0) {
             document.getElementById('professorContent').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📋</div>
-                        <h3>Nenhuma orientação no momento</h3>
-                        <p>Você ainda não orientou nenhum projeto</p>
-                    </div>
-                `;
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>Nenhuma orientação no momento</h3>
+                    <p>Você ainda não orientou nenhum projeto</p>
+                </div>
+            `;
             return;
         }
 
@@ -332,10 +330,17 @@ async function loadProfessorOrientacoes() {
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">${p.titulo}</h3>
+                            ${p.nota ? `<span class="card-badge ${p.nota >= 6 ? 'badge-approved' : 'badge-rejected'}">${p.nota.toFixed(1)}</span>` : ''}
                         </div>
                         <div class="card-content">
+                            <p><strong>Descrição:</strong> ${p.descricao ? (p.descricao.length > 100 ? p.descricao.substring(0, 100) + '...' : p.descricao) : 'Sem descrição'}</p>
                             <p><strong>Alunos:</strong></p>
                             ${p.alunos?.map(a => `<span class="chip">${a.nome}</span>`).join('') || 'Nenhum'}
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary" onclick="verDetalhesProjeto(${p.id})">
+                                Ver Detalhes
+                            </button>
                         </div>
                     </div>
                 `).join('')}
@@ -426,6 +431,86 @@ document.getElementById('formAvaliar').addEventListener('submit', async (e) => {
     }
 });
 });
+
+function mostrarDetalhesProjeto(projeto) {
+    const status = projeto.nota ? 
+        (projeto.nota >= 6 ? 'Aprovado' : 'Reprovado') : 
+        'Em andamento';
+    
+    const badgeClass = projeto.nota ? 
+        (projeto.nota >= 6 ? 'badge-approved' : 'badge-rejected') : 
+        'badge-pending';
+
+    const html = `
+        <div class="card" style="border: none; padding: 0;">
+            <div class="card-header" style="padding-bottom: 16px;">
+                <h3 class="card-title">${projeto.titulo}</h3>
+                <span class="card-badge ${badgeClass}">${status}</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">ID do Projeto:</span>
+                <span class="info-value">${projeto.id}</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Descrição:</span>
+                <span class="info-value">${projeto.descricao || 'Sem descrição'}</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Orientador:</span>
+                <span class="info-value">${projeto.professores?.Orientadores?.nome || 'Não atribuído'}</span>
+            </div>
+            
+            ${projeto.nota ? `
+            <div class="info-row">
+                <span class="info-label">Nota Final:</span>
+                <span class="info-value"><strong style="color: ${projeto.nota >= 6 ? '#065f46' : '#991b1b'};">${projeto.nota.toFixed(1)}</strong></span>
+            </div>
+            ` : ''}
+            
+            <div class="info-row">
+                <span class="info-label">Alunos Participantes:</span>
+                <div class="info-value">
+                    ${projeto.alunos && projeto.alunos.length > 0 ? 
+                        projeto.alunos.map(a => `
+                            <div style="margin-bottom: 8px;">
+                                <span class="chip">${a.nome}</span>
+                                <span style="font-size: 12px; color: #6b7280; margin-left: 8px;">Mat: ${a.matricula}</span>
+                            </div>
+                        `).join('') : 
+                        '<span style="color: #6b7280;">Nenhum aluno cadastrado</span>'
+                    }
+                </div>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Status de Aprovação:</span>
+                <span class="info-value">
+                    ${projeto.aprovado ? 
+                        '<span class="chip" style="background: #d1fae5; color: #065f46;">✓ Aprovado</span>' : 
+                        '<span class="chip" style="background: #fee2e2; color: #991b1b;">✗ Não Aprovado</span>'
+                    }
+                </span>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('projetoDetalhesContent').innerHTML = html;
+}
+
+async function verDetalhesProjeto(projetoId) {
+    try {
+        const response = await fetch(`${API_URL}/projetos/${projetoId}`);
+        const projeto = await response.json();
+        
+        mostrarDetalhesProjeto(projeto);
+        openModal('modalDetalhesProjeto');
+    } catch (error) {
+        showAlert('professorAlert', 'Erro ao carregar detalhes do projeto', 'error');
+    }
+}
 
 // Funções do Administrador
 async function loadAdminData() {

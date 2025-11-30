@@ -7,7 +7,7 @@ let currentProjetoId = null;
 let currentTab = 'orientacoes';
 let adminCurrentTab = 'dashboard';
 
-    // Funções de Login
+// Funções de Login
 document.addEventListener('DOMContentLoaded', function() {
     // Funções de Login
     const loginForm = document.getElementById('loginForm');
@@ -65,16 +65,17 @@ function showScreen(screen) {
     
     // Mostra apenas a tela desejada
     if (screen === 'aluno') {
-        document.getElementById('alunoScreen').style.display = 'block';
+        document.getElementById('alunoScreen').style.display = 'flex';
     } else if (screen === 'professor') {
-        document.getElementById('professorScreen').style.display = 'block';
+        document.getElementById('professorScreen').style.display = 'flex';
     } else if (screen === 'admin') {
-        document.getElementById('adminScreen').style.display = 'block';
+        document.getElementById('adminScreen').style.display = 'flex';
     } else {
-        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('loginScreen').style.display = 'flex';
     }
 }
 });
+
 // Funções do Aluno
 async function loadUserData() {
     if (currentUser.tipoUsuario === 'aluno') {
@@ -92,7 +93,7 @@ async function loadAlunoData() {
     try {
         const response = await fetch(`${API_URL}/alunos/${currentUser.usuario.matricula}`);
         const responseData = await response.json()
-        // console.log(responseData);
+        
         if (response.status === 400 || response.status === 200 && !responseData.projeto) {
             // Aluno não tem projeto
             document.getElementById('alunoContent').innerHTML = `
@@ -110,10 +111,8 @@ async function loadAlunoData() {
             const project = await projectResponse.json();
 
             displayAlunoProjeto(project);
-            // console.log(project);
         }
     } catch (error) {
-        // console.log(error)
         showAlert('alunoAlert', 'Erro ao carregar dados', 'error');
     }
 }
@@ -128,72 +127,64 @@ function displayAlunoProjeto(projeto) {
         'badge-pending';
 
     if (!projeto.nota) {
-    document.getElementById('alunoContent').innerHTML = `
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">${projeto.titulo}</h2>
-                <span class="card-badge ${badgeClass}">${status}</span>
-            </div>
-            <div class="card-content">
-                <div class="info-row">
-                    <span class="info-label">Descrição:</span>
-                    <span class="info-value">${projeto.descricao}</span>
+        document.getElementById('alunoContent').innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">${projeto.titulo}</h2>
+                    <span class="card-badge ${badgeClass}">${status}</span>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Orientador:</span>
-                    <span class="info-value">${projeto.professores?.Orientadores?.nome || 'Aguardando'}</span>
-                </div>
-                ${projeto.nota ? `
-                <div class="info-row">
-                    <span class="info-label">Nota:</span>
-                    <span class="info-value"><strong>${projeto.nota.toFixed(1)}</strong></span>
-                </div>
-                ` : ''}
-                <div class="info-row">
-                    <span class="info-label">Colaboradores:</span>
-                    <div>
-                        ${projeto.alunos?.map(a => `<span class="chip">${a.nome}</span>`).join('') || 'Nenhum'}
+                <div class="card-content">
+                    <div class="info-row">
+                        <span class="info-label">Descrição:</span>
+                        <span class="info-value">${projeto.descricao}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Orientador:</span>
+                        <span class="info-value">${projeto.professores?.Orientadores?.nome || 'Aguardando'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Colaboradores:</span>
+                        <div>
+                            ${projeto.alunos?.map(a => `<span class="chip">${a.nome}</span>`).join('') || 'Nenhum'}
+                        </div>
                     </div>
                 </div>
+                <div class="card-footer">
+                    <button class="btn btn-primary" onclick="addColaboradorToProjeto(${projeto.id})">
+                        Adicionar Colaborador
+                    </button>
+                </div>
             </div>
-            <div class="card-footer">
-                <button class="btn btn-primary" onclick="addColaboradorToProjeto(${projeto.id})">
-                    Adicionar Colaborador
-                </button>
-            </div>
-        </div>
-    `;
+        `;
     } else {
-    document.getElementById('alunoContent').innerHTML = `
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">${projeto.titulo}</h2>
-                <span class="card-badge ${badgeClass}">${status}</span>
-            </div>
-            <div class="card-content">
-                <div class="info-row">
-                    <span class="info-label">Descrição:</span>
-                    <span class="info-value">${projeto.descricao}</span>
+        document.getElementById('alunoContent').innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">${projeto.titulo}</h2>
+                    <span class="card-badge ${badgeClass}">${status}</span>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Orientador:</span>
-                    <span class="info-value">${projeto.professores?.Orientadores?.nome || 'Aguardando'}</span>
-                </div>
-                ${projeto.nota ? `
-                <div class="info-row">
-                    <span class="info-label">Nota:</span>
-                    <span class="info-value"><strong>${projeto.nota.toFixed(1)}</strong></span>
-                </div>
-                ` : ''}
-                <div class="info-row">
-                    <span class="info-label">Colaboradores:</span>
-                    <div>
-                        ${projeto.alunos?.map(a => `<span class="chip">${a.nome}</span>`).join('') || 'Nenhum'}
+                <div class="card-content">
+                    <div class="info-row">
+                        <span class="info-label">Descrição:</span>
+                        <span class="info-value">${projeto.descricao}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Orientador:</span>
+                        <span class="info-value">${projeto.professores?.Orientadores?.nome || 'Aguardando'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Nota:</span>
+                        <span class="info-value"><strong>${projeto.nota.toFixed(1)}</strong></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Colaboradores:</span>
+                        <div>
+                            ${projeto.alunos?.map(a => `<span class="chip">${a.nome}</span>`).join('') || 'Nenhum'}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    `;
+        `;
     }
 }
 
@@ -213,79 +204,77 @@ function closeModal(modalId) {
 
 // Form handlers
 document.addEventListener('DOMContentLoaded', function() {
-document.getElementById('formCriarProjeto').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const matriculas = [currentUser.usuario.matricula];
-    console.log(matriculas)
-    const colaboradores = document.getElementById('projetoColaboradores').value;
-    if (colaboradores) {
-        colaboradores.split(',').forEach(m => {
-            const mat = parseInt(m.trim());
-            if (mat) matriculas.push(mat);
-        });
-    }
-
-    const dados = {
-        titulo: document.getElementById('projetoTitulo').value,
-        descricao: document.getElementById('projetoDescricao').value,
-        matriculas: matriculas,
-        nota: null,
-        aprovado: false
-    };
-
-    const orientadorReg = document.getElementById('projetoOrientador').value;
-    if (orientadorReg) {
-        dados.professores = {"Orientadores": parseInt(orientadorReg)}
-    }
-
-    try {
-        console.log("teste")
-        const response = await fetch(`${API_URL}/projetos`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dados)
-        });
-
-        if (response.ok) {
-            closeModal('modalCriarProjeto');
-            showAlert('alunoAlert', 'Projeto criado com sucesso!', 'success');
-            loadAlunoData();
-            document.getElementById('formCriarProjeto').reset();
-        } else {
-            const error = await response.json();
-            // console.log(error)
-            showAlert('alunoAlert', error.erro || 'Erro ao criar projeto', 'error');
+    document.getElementById('formCriarProjeto').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const matriculas = [currentUser.usuario.matricula];
+        const colaboradores = document.getElementById('projetoColaboradores').value;
+        if (colaboradores) {
+            colaboradores.split(',').forEach(m => {
+                const mat = parseInt(m.trim());
+                if (mat) matriculas.push(mat);
+            });
         }
-    } catch (error) {
-        showAlert('alunoAlert', 'Erro ao criar projeto', 'error');
-    }
-});
 
-document.getElementById('formAddColaborador').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const matricula = document.getElementById('colaboradorMatricula').value;
+        const dados = {
+            titulo: document.getElementById('projetoTitulo').value,
+            descricao: document.getElementById('projetoDescricao').value,
+            matriculas: matriculas,
+            nota: null,
+            aprovado: false
+        };
 
-    try {
-        const response = await fetch(
-            `${API_URL}/projetos/${currentProjetoId}/alunos/${matricula}`,
-            { method: 'POST' }
-        );
-
-        if (response.ok) {
-            closeModal('modalAddColaborador');
-            showAlert('alunoAlert', 'Colaborador adicionado com sucesso!', 'success');
-            loadAlunoData();
-            document.getElementById('formAddColaborador').reset();
-        } else {
-            const error = await response.json();
-            showAlert('alunoAlert', error.erro || 'Erro ao adicionar colaborador', 'error');
+        const orientadorReg = document.getElementById('projetoOrientador').value;
+        if (orientadorReg) {
+            dados.professores = {"Orientadores": parseInt(orientadorReg)}
         }
-    } catch (error) {
-        showAlert('alunoAlert', 'Erro ao adicionar colaborador', 'error');
-    }
+
+        try {
+            const response = await fetch(`${API_URL}/projetos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+
+            if (response.ok) {
+                closeModal('modalCriarProjeto');
+                showAlert('alunoAlert', 'Projeto criado com sucesso!', 'success');
+                loadAlunoData();
+                document.getElementById('formCriarProjeto').reset();
+            } else {
+                const error = await response.json();
+                showAlert('alunoAlert', error.erro || 'Erro ao criar projeto', 'error');
+            }
+        } catch (error) {
+            showAlert('alunoAlert', 'Erro ao criar projeto', 'error');
+        }
+    });
+
+    document.getElementById('formAddColaborador').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const matricula = document.getElementById('colaboradorMatricula').value;
+
+        try {
+            const response = await fetch(
+                `${API_URL}/projetos/${currentProjetoId}/alunos/${matricula}`,
+                { method: 'POST' }
+            );
+
+            if (response.ok) {
+                closeModal('modalAddColaborador');
+                showAlert('alunoAlert', 'Colaborador adicionado com sucesso!', 'success');
+                loadAlunoData();
+                document.getElementById('formAddColaborador').reset();
+            } else {
+                const error = await response.json();
+                showAlert('alunoAlert', error.erro || 'Erro ao adicionar colaborador', 'error');
+            }
+        } catch (error) {
+            showAlert('alunoAlert', 'Erro ao adicionar colaborador', 'error');
+        }
+    });
 });
-});
+
 // Funções do Professor
 async function loadProfessorData() {
     document.getElementById('professorNome').textContent = currentUser.usuario.nome;
@@ -362,7 +351,6 @@ async function loadProfessorAvaliacoes() {
             (p?.professores?.Orientadores?.registro === currentUser?.usuario?.registro) && !p?.nota
         );
 
-        console.log(projetosParaAvaliar);
         if (projetosParaAvaliar.length === 0) {
             document.getElementById('professorContent').innerHTML = `
                 <div class="empty-state">
@@ -408,28 +396,28 @@ function avaliarProjeto(projetoId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-document.getElementById('formAvaliar').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const nota = parseFloat(document.getElementById('projetoNota').value);
+    document.getElementById('formAvaliar').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nota = parseFloat(document.getElementById('projetoNota').value);
 
-    try {
-        const response = await fetch(
-            `${API_URL}/projetos/${currentProjetoId}/nota?nota=${nota}`,
-            { method: 'PUT' }
-        );
+        try {
+            const response = await fetch(
+                `${API_URL}/projetos/${currentProjetoId}/nota?nota=${nota}`,
+                { method: 'PUT' }
+            );
 
-        if (response.ok) {
-            closeModal('modalAvaliar');
-            showAlert('professorAlert', 'Projeto avaliado com sucesso!', 'success');
-            loadProfessorAvaliacoes();
-            document.getElementById('formAvaliar').reset();
-        } else {
+            if (response.ok) {
+                closeModal('modalAvaliar');
+                showAlert('professorAlert', 'Projeto avaliado com sucesso!', 'success');
+                loadProfessorAvaliacoes();
+                document.getElementById('formAvaliar').reset();
+            } else {
+                showAlert('professorAlert', 'Erro ao avaliar projeto', 'error');
+            }
+        } catch (error) {
             showAlert('professorAlert', 'Erro ao avaliar projeto', 'error');
         }
-    } catch (error) {
-        showAlert('professorAlert', 'Erro ao avaliar projeto', 'error');
-    }
-});
+    });
 });
 
 function mostrarDetalhesProjeto(projeto) {
@@ -488,9 +476,11 @@ function mostrarDetalhesProjeto(projeto) {
             <div class="info-row">
                 <span class="info-label">Status de Aprovação:</span>
                 <span class="info-value">
-                    ${projeto.aprovado ? 
+                    ${projeto.nota && projeto.nota >= 6 ? 
                         '<span class="chip" style="background: #d1fae5; color: #065f46;">✓ Aprovado</span>' : 
-                        '<span class="chip" style="background: #fee2e2; color: #991b1b;">✗ Não Aprovado</span>'
+                        projeto.nota ? 
+                        '<span class="chip" style="background: #fee2e2; color: #991b1b;">✗ Reprovado</span>' :
+                        '<span class="chip" style="background: #fef3c7; color: #92400e;">⏳ Em Avaliação</span>'
                     }
                 </span>
             </div>

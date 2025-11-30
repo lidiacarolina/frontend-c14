@@ -94,6 +94,8 @@ async function loadAlunoData() {
         const response = await fetch(`${API_URL}/alunos/${currentUser.usuario.matricula}`);
         const responseData = await response.json()
         
+        currentUser.usuario = responseData;
+
         if (response.status === 400 || response.status === 200 && !responseData.projeto) {
             // Aluno não tem projeto
             document.getElementById('alunoContent').innerHTML = `
@@ -348,7 +350,7 @@ async function loadProfessorAvaliacoes() {
         const projetos = await response.json();
 
         const projetosParaAvaliar = projetos.filter(p => 
-            (p?.professores?.Orientadores?.registro === currentUser?.usuario?.registro) && !p?.nota
+            (p?.professores?.Orientadores?.registro !== currentUser?.usuario?.registro) && !p?.nota
         );
 
         if (projetosParaAvaliar.length === 0) {

@@ -716,3 +716,19 @@ async function deletarProjeto(id) {
         showAlert('adminAlert', 'Erro ao deletar projeto', 'error');
     }
 }
+
+function showAlert(elementId, mensagem, tipo = 'success') {
+    const container = document.getElementById(elementId);
+
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="alert ${tipo}">
+            ${mensagem}
+        </div>
+    `;
+
+    setTimeout(() => {
+        container.innerHTML = '';
+    }, 3000);
+}
